@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memory Game</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(6, 80px); /* 6 columns for 24 cards */
+      gap: 12px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .card {
+      width: 80px;
+      height: 80px;
+      background: #1e90ff;
+      color: white;
+      font-size: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 10px;
+      position: relative;
+      transition: 0.3s ease;
+    }
+
+    .card.flipped {
+      background: #fff;
+      color: #333;
+      border: 2px solid #1e90ff;
+    }
+
+    .card.matched {
+      background: #28a745;
+      color: white;
+      pointer-events: none;
+    }
+
+    #status {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 Memory Game - 24 Cards</h1>
+  <div id="game-board"></div>
+  <p id="status">Moves: 0</p>
+
+  <script>
+    const board = document.getElementById('game-board');
+    const status = document.getElementById('status');
+
+    // 12 emoji pairs (x2 = 24 cards)
+    const emojis = ['🍎','🍌','🍇','🍓','🍍','🥝','🍒','🥥','🍊','🍉','🍋','🍈'];
+    let cards = [...emojis, ...emojis]; // Duplicate for pairs
+    cards = cards.sort(() => 0.5 - Math.random()); // Shuffle
+
+    let flippedCards = [];
+    let matchedCards = 0;
+    let moves = 0;
+
+    function createCard(emoji, index) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.dataset.emoji = emoji;
+      card.dataset.index = index;
+      card.innerText = '';
+      board.appendChild(card);
+    }
+
+    cards.forEach((emoji, index) => {
+      createCard(emoji, index);
+    });
+
+    board.addEventListener('click', function (e) {
+      const card = e.target;
+      if (!card.classList.contains('card') || card.classList.contains('flipped') || card.classList.contains('matched')) {
+        return;
+      }
+
+      card.classList.add('flipped');
+      card.innerText = card.dataset.emoji;
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        moves++;
+        status.innerText = `Moves: ${moves}`;
+
+        const [card1, card2] = flippedCards;
+        if (card1.dataset.emoji === card2.dataset.emoji && card1.dataset.index !== card2.dataset.index) {
+          card1.classList.add('matched');
+          card2.classList.add('matched');
+          matchedCards += 2;
+          flippedCards = [];
+
+          if (matchedCards === cards.length) {
+            setTimeout(() => {
+              alert(`🎉 You matched all in ${moves} moves!`);
+              location.reload();
+            }, 600);
+          }
+        } else {
+          setTimeout(() => {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            card1.innerText = '';
+            card2.innerText = '';
+            flippedCards = [];
+          }, 800);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
